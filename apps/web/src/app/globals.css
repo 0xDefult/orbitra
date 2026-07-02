@@ -1,0 +1,184 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   Orbitra — Global Styles
+   Cinematic dark theme with glassmorphism
+   ============================================ */
+
+:root {
+  --void-900: #030315;
+  --void-800: #060620;
+  --neon-cyan: #00f0ff;
+  --neon-blue: #0088ff;
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-blur: 20px;
+}
+
+/* ── Base ────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--void-900);
+  color: #ffffff;
+  font-family: var(--font-body), system-ui, -apple-system, sans-serif;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* ── Canvas ──────────────────────────────── */
+canvas {
+  display: block;
+}
+
+/* ── Glass Panel Utility ─────────────────── */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+}
+
+.glass-panel-heavy {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+}
+
+/* ── Neon Text ───────────────────────────── */
+.neon-text {
+  color: var(--neon-cyan);
+  text-shadow:
+    0 0 10px rgba(0, 240, 255, 0.5),
+    0 0 40px rgba(0, 240, 255, 0.2),
+    0 0 80px rgba(0, 240, 255, 0.1);
+}
+
+.neon-text-blue {
+  color: var(--neon-blue);
+  text-shadow:
+    0 0 10px rgba(0, 136, 255, 0.5),
+    0 0 40px rgba(0, 136, 255, 0.2),
+    0 0 80px rgba(0, 136, 255, 0.1);
+}
+
+/* ── Glow Effects ────────────────────────── */
+.glow-border {
+  box-shadow:
+    0 0 20px rgba(0, 240, 255, 0.1),
+    inset 0 0 20px rgba(0, 240, 255, 0.05);
+}
+
+.glow-border-gold {
+  box-shadow:
+    0 0 20px rgba(255, 170, 0, 0.1),
+    inset 0 0 20px rgba(255, 170, 0, 0.05);
+}
+
+/* ── Scrollbar ───────────────────────────── */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* ── Selection ───────────────────────────── */
+::selection {
+  background: rgba(0, 240, 255, 0.3);
+  color: #ffffff;
+}
+
+/* ── Animation Utilities ─────────────────── */
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.8s ease-out forwards;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .animate-text-reveal {
+    overflow: hidden;
+    white-space: nowrap;
+    animation: textReveal 1.5s steps(40) forwards;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes textReveal {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+/* ── Cinematic Loading ───────────────────── */
+.cinematic-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at center, var(--void-800) 0%, var(--void-900) 70%);
+  transition: opacity 0.6s ease-out;
+}
+
+.cinematic-loading.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Response Scaling ────────────────────── */
+@media (max-width: 768px) {
+  :root {
+    --glass-blur: 12px;
+  }
+  .glass-panel,
+  .glass-panel-heavy {
+    border-radius: 12px;
+  }
+}

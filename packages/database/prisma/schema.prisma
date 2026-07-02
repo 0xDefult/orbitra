@@ -1,0 +1,188 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Satellite {
+  id             String    @id @default(cuid())
+  noradId        Int       @unique
+  name           String
+  intlDesignator String?
+
+  // TLE Data (latest)
+  tleLine1     String?
+  tleLine2     String?
+  tleEpoch     DateTime?
+  tleUpdatedAt DateTime?
+
+  // Classification
+  objectType    String? // PAYLOAD, ROCKET_BODY, DEBRIS
+  orbitalClass  String? // LEO, MEO, GEO, HEO, SSO
+  orbitalRegime String?
+
+  // Physical Characteristics
+  dryMass    Float? // kg
+  launchMass Float? // kg
+  power      Float? // watts
+  span       Float? // meters
+  shape      String?
+
+  // Mission
+  missionType        String?
+  missionDescription String?
+  purpose            String?
+
+  // Origin
+  countryCode    String?
+  country        Country?      @relation(fields: [countryCode], references: [code])
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  manufacturer   String?
+
+  // Launch
+  launchDate    DateTime?
+  launchVehicle String?
+  launchSite    String?
+
+  // Orbital Parameters (derived from TLE)
+  period         Float? // minutes
+  inclination    Float? // degrees
+  apogee         Float? // km
+  perigee        Float? // km
+  eccentricity   Float?
+  semiMajorAxis  Float? // km
+  raan           Float? // degrees — Right Ascension of Ascending Node
+
+  // Status
+  isActive  Boolean   @default(true)
+  decayDate DateTime?
+
+  // Constellation
+  constellationId String?
+  constellation   Constellation? @relation(fields: [constellationId], references: [id])
+
+  // Fun facts (JSON array of strings)
+  funFacts Json? @default("[]")
+
+  // Relations
+  positions SatellitePosition[]
+  stories   Story[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([noradId])
+  @@index([countryCode])
+  @@index([orbitalClass])
+  @@index([missionType])
+  @@index([launchDate])
+  @@index([isActive])
+}
+
+model SatellitePosition {
+  id          String    @id @default(cuid())
+  satelliteId String
+  satellite   Satellite @relation(fields: [satelliteId], references: [id], onDelete: Cascade)
+
+  timestamp DateTime
+  latitude  Float
+  longitude Float
+  altitude  Float // km
+  velocity  Float // km/s
+  heading   Float? // degrees
+
+  orbitNumber Int?
+
+  @@index([satelliteId, timestamp])
+  @@index([timestamp])
+}
+
+model Country {
+  code        String @id // ISO 3166-1 alpha-2
+  name        String
+  flagEmoji   String?
+  continent   String?
+  satellites  Satellite[]
+}
+
+model Organization {
+  id          String      @id @default(cuid())
+  name        String
+  countryCode String?
+  type        String? // Government, Commercial, Military, Academic
+  website     String?
+  satellites  Satellite[]
+}
+
+model LaunchSite {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  countryCode String?
+  latitude    Float?
+  longitude   Float?
+}
+
+model Constellation {
+  id         String      @id @default(cuid())
+  name       String      @unique
+  operator   String?
+  totalSats  Int?
+  purpose    String?
+  satellites Satellite[]
+}
+
+model Story {
+  id          String    @id @default(cuid())
+  satelliteId String    @unique
+  satellite   Satellite @relation(fields: [satelliteId], references: [id], onDelete: Cascade)
+
+  chapters  Chapter[]
+  narration String?
+
+  generatedAt DateTime?
+  updatedAt   DateTime @updatedAt
+}
+
+model Chapter {
+  id       String @id @default(cuid())
+  storyId  String
+  story    Story  @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  order    Int
+  title    String // "Leaving Pakistan"
+  subtitle String?
+
+  startLat Float
+  startLng Float
+  endLat   Float
+  endLng   Float
+
+  narration String? // Chapter-specific AI narration
+  duration  Int? // estimated seconds for this chapter
+
+  @@index([storyId, order])
+}
+
+model LaunchEvent {
+  id          String   @id @default(cuid())
+  satelliteId String?
+  name        String
+  date        DateTime
+  countryCode String?
+  vehicle     String?
+  site        String?
+  success     Boolean?
+  description String?
+}
+
+model TleCache {
+  id        String   @id @default(cuid())
+  url       String   @unique
+  data      String   // Raw TLE text
+  fetchedAt DateTime @default(now())
+  expiresAt DateTime
+}
